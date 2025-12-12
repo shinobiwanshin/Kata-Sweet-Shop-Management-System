@@ -70,7 +70,7 @@ class SweetServiceTest {
         when(sweetRepository.save(any(Sweet.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Sweet result = sweetService.purchaseSweet(1L, "test@example.com");
+        Sweet result = sweetService.purchaseSweet(1L, 1, "test@example.com");
 
         // Assert
         assertEquals(9, result.getQuantity());
@@ -85,7 +85,7 @@ class SweetServiceTest {
         when(sweetRepository.findById(1L)).thenReturn(Optional.of(sweet));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> sweetService.purchaseSweet(1L, "test@example.com"));
+        assertThrows(RuntimeException.class, () -> sweetService.purchaseSweet(1L, 1, "test@example.com"));
     }
 
     @Test

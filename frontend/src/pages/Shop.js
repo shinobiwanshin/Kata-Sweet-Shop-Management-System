@@ -69,10 +69,12 @@ export default function Shop() {
 
     setIsPurchasing(true);
     try {
-      // Loop to purchase quantity times since API currently supports 1 at a time
-      for (let i = 0; i < quantity; i++) {
-        await api.post(`/sweets/${selectedSweet.id}/purchase`);
-      }
+      // Send single request with quantity
+      await api.post(`/sweets/${selectedSweet.id}/purchase`, quantity, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       fetchSweets();
       setIsPurchaseModalOpen(false);

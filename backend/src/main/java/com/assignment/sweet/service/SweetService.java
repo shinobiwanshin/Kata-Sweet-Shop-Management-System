@@ -34,25 +34,25 @@ public class SweetService {
         return sweetRepository.save(sweet);
     }
 
-    public Sweet purchaseSweet(Long id, String customerEmail) {
-        System.out.println("DEBUG: Purchasing sweet " + id + " for user: " + customerEmail);
+    public Sweet purchaseSweet(Long id, Integer quantity, String customerEmail) {
+        System.out.println("DEBUG: Purchasing " + quantity + " sweet(s) " + id + " for user: " + customerEmail);
         Sweet sweet = sweetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sweet not found"));
 
-        if (sweet.getQuantity() <= 0) {
-            throw new RuntimeException("Sweet out of stock");
+        if (sweet.getQuantity() < quantity) {
+            throw new RuntimeException("Insufficient stock");
         }
 
-        sweet.setQuantity(sweet.getQuantity() - 1);
+        sweet.setQuantity(sweet.getQuantity() - quantity);
         Sweet savedSweet = sweetRepository.save(sweet);
 
         // Record purchase
         com.assignment.sweet.model.Purchase purchase = new com.assignment.sweet.model.Purchase();
         purchase.setSweetId(savedSweet.getId());
         purchase.setSweetName(savedSweet.getName());
-        purchase.setQuantity(1);
+        purchase.setQuantity(quantity);
         purchase.setPricePerUnit(savedSweet.getPrice());
-        purchase.setTotalPrice(savedSweet.getPrice());
+        purchase.setTotalPrice(savedSweet.getPrice().multiply(java.math.BigDecimal.valueOf(quantity)));
         purchase.setCustomerEmail(customerEmail);
         purchaseRepository.save(purchase);
         System.out.println("DEBUG: Purchase saved for " + customerEmail);

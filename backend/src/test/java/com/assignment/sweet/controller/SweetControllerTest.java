@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,7 +73,7 @@ class SweetControllerTest {
     void purchaseSweet_ShouldReturnUpdatedSweet() throws Exception {
         Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 9, "Delicious Ladoo",
                 "http://image.url");
-        when(sweetService.purchaseSweet(1L, "test@example.com")).thenReturn(sweet);
+        when(sweetService.purchaseSweet(eq(1L), anyInt(), eq("test@example.com"))).thenReturn(sweet);
 
         mockMvc.perform(post("/api/sweets/1/purchase")
                 .with(csrf()))

@@ -32,10 +32,12 @@ public class SweetController {
     }
 
     @PostMapping("/{id}/purchase")
-    public ResponseEntity<Sweet> purchaseSweet(@PathVariable Long id,
+    public ResponseEntity<Sweet> purchaseSweet(@PathVariable Long id, @RequestBody(required = false) Integer quantity,
             org.springframework.security.core.Authentication authentication) {
         String email = authentication.getName();
-        return ResponseEntity.ok(sweetService.purchaseSweet(id, email));
+        // Default to 1 if quantity is null (backward compatibility or simple requests)
+        int qty = (quantity != null) ? quantity : 1;
+        return ResponseEntity.ok(sweetService.purchaseSweet(id, qty, email));
     }
 
     @PostMapping("/{id}/restock")

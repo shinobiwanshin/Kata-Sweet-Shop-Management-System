@@ -29,8 +29,25 @@ class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
+    @MockBean
+    private com.assignment.sweet.security.JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private com.assignment.sweet.security.JwtTokenProvider jwtTokenProvider;
+
     @Autowired
     private ObjectMapper objectMapper;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() throws Exception {
+        org.mockito.Mockito.doAnswer(invocation -> {
+            jakarta.servlet.ServletRequest request = invocation.getArgument(0);
+            jakarta.servlet.ServletResponse response = invocation.getArgument(1);
+            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(request, response);
+            return null;
+        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    }
 
     @Test
     @WithMockUser

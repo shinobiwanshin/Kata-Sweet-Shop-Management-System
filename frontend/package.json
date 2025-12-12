@@ -42,6 +42,11 @@
       "last 1 safari version"
     ]
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(axios)/)"
+    ]
+  },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1"

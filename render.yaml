@@ -11,10 +11,18 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: sweetshop-db
-          property: connectionString
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: sweetshop-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: sweetshop-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: sweetshop-db

@@ -8,7 +8,6 @@ services:
   - type: web
     name: sweetshop-backend
     runtime: docker
-    plan: free
     rootDir: backend
     dockerfilePath: ./Dockerfile
     envVars:
@@ -31,7 +30,6 @@ services:
   - type: web
     name: sweetshop-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: build

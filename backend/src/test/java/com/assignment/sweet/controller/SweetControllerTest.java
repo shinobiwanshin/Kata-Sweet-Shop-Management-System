@@ -37,7 +37,8 @@ class SweetControllerTest {
     @Test
     @WithMockUser
     void getAllSweets_ShouldReturnListOfSweets() throws Exception {
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 100);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 100, "Delicious Ladoo",
+                "http://image.url");
         when(sweetService.getAllSweets()).thenReturn(List.of(sweet));
 
         mockMvc.perform(get("/api/sweets"))
@@ -48,7 +49,7 @@ class SweetControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void addSweet_ShouldReturnSavedSweet() throws Exception {
-        Sweet sweet = new Sweet(1L, "Barfi", "Milk", BigDecimal.valueOf(15.0), 50);
+        Sweet sweet = new Sweet(1L, "Barfi", "Milk", BigDecimal.valueOf(15.0), 50, "Tasty Barfi", "http://image.url");
         when(sweetService.addSweet(any(Sweet.class))).thenReturn(sweet);
 
         mockMvc.perform(post("/api/sweets")
@@ -62,7 +63,8 @@ class SweetControllerTest {
     @Test
     @WithMockUser
     void purchaseSweet_ShouldReturnUpdatedSweet() throws Exception {
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 9);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 9, "Delicious Ladoo",
+                "http://image.url");
         when(sweetService.purchaseSweet(1L)).thenReturn(sweet);
 
         mockMvc.perform(post("/api/sweets/1/purchase")
@@ -74,7 +76,8 @@ class SweetControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void restockSweet_ShouldReturnUpdatedSweet() throws Exception {
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 15);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 15, "Delicious Ladoo",
+                "http://image.url");
         when(sweetService.restockSweet(1L, 5)).thenReturn(sweet);
 
         mockMvc.perform(post("/api/sweets/1/restock")

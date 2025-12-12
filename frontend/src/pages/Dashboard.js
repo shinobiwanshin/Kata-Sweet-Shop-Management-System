@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import SweetCard from "../components/SweetCard";
+import SearchFilters from "../components/SearchFilters";
 
 const Dashboard = () => {
   const [sweets, setSweets] = useState([]);
@@ -8,8 +10,11 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   // Search & Filter state
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "all",
+    maxPrice: "all",
+  });
 
   // Admin state
   const [sweetForm, setSweetForm] = useState({
@@ -17,6 +22,8 @@ const Dashboard = () => {
     category: "",
     price: "",
     quantity: "",
+    description: "",
+    imageUrl: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -83,6 +90,8 @@ const Dashboard = () => {
       category: sweet.category,
       price: sweet.price,
       quantity: sweet.quantity,
+      description: sweet.description || "",
+      imageUrl: sweet.imageUrl || "",
     });
     setEditId(sweet.id);
     setIsEditing(true);
@@ -102,7 +111,14 @@ const Dashboard = () => {
   };
 
   const resetForm = () => {
-    setSweetForm({ name: "", category: "", price: "", quantity: "" });
+    setSweetForm({
+      name: "",
+      category: "",
+      price: "",
+      quantity: "",
+      description: "",
+      imageUrl: "",
+    });
     setIsEditing(false);
     setEditId(null);
     setShowForm(false);
@@ -111,10 +127,14 @@ const Dashboard = () => {
   const filteredSweets = sweets.filter((sweet) => {
     const matchesSearch = sweet.name
       .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      .includes(filters.search.toLowerCase());
     const matchesCategory =
-      filterCategory === "All" || sweet.category === filterCategory;
-    return matchesSearch && matchesCategory;
+      filters.category === "all" ||
+      sweet.category.toLowerCase() === filters.category.toLowerCase();
+    const matchesPrice =
+      filters.maxPrice === "all" || sweet.price <= parseFloat(filters.maxPrice);
+
+    return matchesSearch && matchesCategory && matchesPrice;
   });
 
   const categories = ["All", ...new Set(sweets.map((s) => s.category))];
@@ -127,23 +147,7 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold">Available Sweets</h1>
 
         <div className="flex gap-4 w-full md:w-auto">
-          <input
-            placeholder="Search sweets..."
-            className="border p-2 rounded w-full md:w-64"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            className="border p-2 rounded"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+          {/* Search filters moved below title */}
         </div>
 
         {user?.role === "ADMIN" && (
@@ -158,6 +162,8 @@ const Dashboard = () => {
           </button>
         )}
       </div>
+
+      <SearchFilters filters={filters} onFilterChange={setFilters} />
 
       {showForm && (
         <div className="bg-white p-6 rounded shadow-md mb-8 border-l-4 border-blue-600">
@@ -206,6 +212,22 @@ const Dashboard = () => {
               }
               required
             />
+            <textarea
+              placeholder="Description"
+              className="border p-2 rounded md:col-span-2"
+              value={sweetForm.description}
+              onChange={(e) =>
+                setSweetForm({ ...sweetForm, description: e.target.value })
+              }
+            />
+            <input
+              placeholder="Image URL"
+              className="border p-2 rounded md:col-span-2"
+              value={sweetForm.imageUrl}
+              onChange={(e) =>
+                setSweetForm({ ...sweetForm, imageUrl: e.target.value })
+              }
+            />
             <div className="md:col-span-2 flex gap-2">
               <button
                 type="submit"
@@ -227,60 +249,14 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredSweets.map((sweet) => (
-          <div
+          <SweetCard
             key={sweet.id}
-            className="bg-white p-6 rounded shadow-md hover:shadow-lg transition relative"
-          >
-            <h3 className="text-xl font-bold mb-2">{sweet.name}</h3>
-            <p className="text-gray-600 mb-1">Category: {sweet.category}</p>
-            <p className="text-green-600 font-bold mb-1">
-              Price: ${sweet.price}
-            </p>
-            <p
-              className={`mb-4 font-semibold ${
-                sweet.quantity > 0 ? "text-blue-600" : "text-red-500"
-              }`}
-            >
-              Stock: {sweet.quantity}
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handlePurchase(sweet.id)}
-                disabled={sweet.quantity <= 0}
-                className={`w-full py-2 rounded text-white ${
-                  sweet.quantity > 0
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
-                {sweet.quantity > 0 ? "Buy Now" : "Out of Stock"}
-              </button>
-
-              {user?.role === "ADMIN" && (
-                <div className="flex gap-2 mt-2 pt-2 border-t">
-                  <button
-                    onClick={() => handleRestock(sweet.id)}
-                    className="flex-1 bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 text-sm"
-                  >
-                    Restock
-                  </button>
-                  <button
-                    onClick={() => handleEdit(sweet)}
-                    className="flex-1 bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sweet.id)}
-                    className="flex-1 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+            sweet={sweet}
+            onPurchase={handlePurchase}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            isAdmin={user?.role === "ADMIN"}
+          />
         ))}
         {filteredSweets.length === 0 && (
           <div className="col-span-full text-center text-gray-500 mt-10">

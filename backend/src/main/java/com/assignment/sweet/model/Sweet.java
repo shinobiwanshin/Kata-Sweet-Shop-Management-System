@@ -28,4 +28,10 @@ public class Sweet {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

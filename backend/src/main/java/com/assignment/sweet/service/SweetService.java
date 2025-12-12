@@ -47,6 +47,8 @@ public class SweetService {
         sweet.setCategory(sweetDetails.getCategory());
         sweet.setPrice(sweetDetails.getPrice());
         sweet.setQuantity(sweetDetails.getQuantity());
+        sweet.setDescription(sweetDetails.getDescription());
+        sweet.setImageUrl(sweetDetails.getImageUrl());
         return sweetRepository.save(sweet);
     }
 

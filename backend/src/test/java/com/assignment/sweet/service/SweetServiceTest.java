@@ -28,7 +28,8 @@ class SweetServiceTest {
     @Test
     void getAllSweets_ShouldReturnListOfSweets() {
         // Arrange
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 100);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 100, "Delicious Ladoo",
+                "http://image.url");
         when(sweetRepository.findAll()).thenReturn(List.of(sweet));
 
         // Act
@@ -42,7 +43,7 @@ class SweetServiceTest {
     @Test
     void addSweet_ShouldSaveSweet() {
         // Arrange
-        Sweet sweet = new Sweet(null, "Barfi", "Milk", BigDecimal.valueOf(15.0), 50);
+        Sweet sweet = new Sweet(null, "Barfi", "Milk", BigDecimal.valueOf(15.0), 50, "Tasty Barfi", "http://image.url");
         when(sweetRepository.save(any(Sweet.class))).thenAnswer(invocation -> {
             Sweet s = invocation.getArgument(0);
             s.setId(1L);
@@ -60,7 +61,8 @@ class SweetServiceTest {
     @Test
     void purchaseSweet_ShouldDecreaseQuantity_WhenStockIsAvailable() {
         // Arrange
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 10);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 10, "Delicious Ladoo",
+                "http://image.url");
         when(sweetRepository.findById(1L)).thenReturn(Optional.of(sweet));
         when(sweetRepository.save(any(Sweet.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -74,7 +76,8 @@ class SweetServiceTest {
     @Test
     void purchaseSweet_ShouldThrowException_WhenStockIsInsufficient() {
         // Arrange
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 0);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 0, "Delicious Ladoo",
+                "http://image.url");
         when(sweetRepository.findById(1L)).thenReturn(Optional.of(sweet));
 
         // Act & Assert
@@ -84,7 +87,8 @@ class SweetServiceTest {
     @Test
     void restockSweet_ShouldIncreaseQuantity() {
         // Arrange
-        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 10);
+        Sweet sweet = new Sweet(1L, "Ladoo", "Traditional", BigDecimal.valueOf(10.0), 10, "Delicious Ladoo",
+                "http://image.url");
         when(sweetRepository.findById(1L)).thenReturn(Optional.of(sweet));
         when(sweetRepository.save(any(Sweet.class))).thenAnswer(invocation -> invocation.getArgument(0));
 

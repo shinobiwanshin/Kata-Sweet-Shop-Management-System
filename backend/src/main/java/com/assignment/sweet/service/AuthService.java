@@ -30,7 +30,8 @@ public class AuthService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
+        // Security Fix: Always set role to USER to prevent privilege escalation via mass assignment
+        user.setRole("USER");
 
         return userRepository.save(user);
     }

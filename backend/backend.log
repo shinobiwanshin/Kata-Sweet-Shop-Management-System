@@ -9,7 +9,7 @@
 [INFO] 
 [INFO] --- resources:3.3.1:resources (default-resources) @ sweet ---
 [INFO] Copying 2 resources from src/main/resources to target/classes
-[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.13.0:compile (default-compile) @ sweet ---
 [INFO] Nothing to compile - all classes are up to date.
@@ -34,30 +34,48 @@
 
  :: Spring Boot ::                (v3.3.0)
 
-2025-12-25T14:18:36.037Z  INFO 10629 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : Starting SweetApplication using Java 21.0.8 with PID 10629 (/app/backend/target/classes started by jules in /app/backend)
-2025-12-25T14:18:36.040Z  INFO 10629 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : The following 1 profile is active: "local"
-2025-12-25T14:18:36.771Z  INFO 10629 --- [sweet] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-12-25T14:18:36.840Z  INFO 10629 --- [sweet] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 61 ms. Found 3 JPA repository interfaces.
-2025-12-25T14:18:37.475Z  INFO 10629 --- [sweet] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-12-25T14:18:37.489Z  INFO 10629 --- [sweet] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-12-25T14:18:37.490Z  INFO 10629 --- [sweet] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
-2025-12-25T14:18:37.541Z  INFO 10629 --- [sweet] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-12-25T14:18:37.542Z  INFO 10629 --- [sweet] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1458 ms
-2025-12-25T14:18:37.687Z  INFO 10629 --- [sweet] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-12-25T14:18:37.735Z  INFO 10629 --- [sweet] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
-2025-12-25T14:18:37.769Z  INFO 10629 --- [sweet] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-12-25T14:18:38.075Z  INFO 10629 --- [sweet] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-12-25T14:18:38.116Z  INFO 10629 --- [sweet] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-12-25T14:18:38.301Z  INFO 10629 --- [sweet] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
-2025-12-25T14:18:38.303Z  INFO 10629 --- [sweet] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-12-25T14:18:38.327Z  WARN 10629 --- [sweet] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-12-25T14:18:39.207Z  INFO 10629 --- [sweet] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-12-25T14:18:39.246Z  INFO 10629 --- [sweet] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-12-25T14:18:39.748Z  WARN 10629 --- [sweet] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-12-25T14:18:39.797Z  INFO 10629 --- [sweet] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
-2025-12-25T14:18:40.188Z  INFO 10629 --- [sweet] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2a6871ad, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@260043d, org.springframework.security.web.context.SecurityContextHolderFilter@43f5b014, org.springframework.security.web.header.HeaderWriterFilter@2db82155, org.springframework.web.filter.CorsFilter@3338d29d, org.springframework.security.web.authentication.logout.LogoutFilter@4fae4c3b, com.assignment.sweet.security.JwtAuthenticationFilter@1c966488, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@5c59dfc7, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@28b47211, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5e1e19af, org.springframework.security.web.session.SessionManagementFilter@3093161a, org.springframework.security.web.access.ExceptionTranslationFilter@c76762, org.springframework.security.web.access.intercept.AuthorizationFilter@9e4388d]
-2025-12-25T14:18:40.475Z  INFO 10629 --- [sweet] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
-2025-12-25T14:18:40.484Z  INFO 10629 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : Started SweetApplication in 4.866 seconds (process running for 5.225)
-2025-12-25T14:18:58.645Z  INFO 10629 --- [sweet] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-25T14:18:58.645Z  INFO 10629 --- [sweet] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-12-25T14:18:58.646Z  INFO 10629 --- [sweet] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-12-25T14:31:44.048Z  INFO 19570 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : Starting SweetApplication using Java 21.0.8 with PID 19570 (/app/backend/target/classes started by jules in /app/backend)
+2025-12-25T14:31:44.050Z  INFO 19570 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : The following 1 profile is active: "local"
+2025-12-25T14:31:44.800Z  INFO 19570 --- [sweet] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-25T14:31:44.873Z  INFO 19570 --- [sweet] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 64 ms. Found 3 JPA repository interfaces.
+2025-12-25T14:31:45.512Z  INFO 19570 --- [sweet] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-25T14:31:45.526Z  INFO 19570 --- [sweet] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-25T14:31:45.526Z  INFO 19570 --- [sweet] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2025-12-25T14:31:45.574Z  INFO 19570 --- [sweet] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-25T14:31:45.576Z  INFO 19570 --- [sweet] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1475 ms
+2025-12-25T14:31:45.716Z  INFO 19570 --- [sweet] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-25T14:31:45.771Z  INFO 19570 --- [sweet] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2025-12-25T14:31:45.806Z  INFO 19570 --- [sweet] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-25T14:31:46.132Z  INFO 19570 --- [sweet] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-25T14:31:46.204Z  INFO 19570 --- [sweet] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-25T14:31:46.407Z  INFO 19570 --- [sweet] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2025-12-25T14:31:46.408Z  INFO 19570 --- [sweet] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-25T14:31:46.436Z  WARN 19570 --- [sweet] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-25T14:31:47.342Z  INFO 19570 --- [sweet] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-25T14:31:47.382Z  INFO 19570 --- [sweet] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-25T14:31:47.908Z  WARN 19570 --- [sweet] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-25T14:31:47.937Z  INFO 19570 --- [sweet] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2025-12-25T14:31:48.556Z  INFO 19570 --- [sweet] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@930911e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2bd158ea, org.springframework.security.web.context.SecurityContextHolderFilter@13e5c53c, org.springframework.security.web.header.HeaderWriterFilter@13976c57, org.springframework.web.filter.CorsFilter@42d96745, org.springframework.security.web.authentication.logout.LogoutFilter@690c3b1f, com.assignment.sweet.security.JwtAuthenticationFilter@7e4dddee, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@17f7a1af, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@40ed4674, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4d1f168, org.springframework.security.web.session.SessionManagementFilter@e280006, org.springframework.security.web.access.ExceptionTranslationFilter@45bbb3e8, org.springframework.security.web.access.intercept.AuthorizationFilter@4cddc3d9]
+2025-12-25T14:31:48.862Z  INFO 19570 --- [sweet] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-25T14:31:48.871Z  INFO 19570 --- [sweet] [           main] com.assignment.sweet.SweetApplication    : Started SweetApplication in 5.223 seconds (process running for 5.561)
+2025-12-25T14:32:16.402Z  INFO 19570 --- [sweet] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-25T14:32:16.402Z  INFO 19570 --- [sweet] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-25T14:32:16.404Z  INFO 19570 --- [sweet] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+DEBUG: Purchasing 1 sweet(s) 1 for user: buyer_1766673135727@example.com
+DEBUG: Purchase saved for buyer_1766673135727@example.com
+DEBUG: Fetching purchases for user: buyer_1766673135727@example.com
+DEBUG: Found 1 purchases for buyer_1766673135727@example.com
+DEBUG: Fetching purchases for user: buyer_1766673135727@example.com
+DEBUG: Found 1 purchases for buyer_1766673135727@example.com
+DEBUG: Purchasing 1 sweet(s) 1 for user: buyer_1766673170128@example.com
+DEBUG: Purchase saved for buyer_1766673170128@example.com
+DEBUG: Fetching purchases for user: buyer_1766673170128@example.com
+DEBUG: Found 1 purchases for buyer_1766673170128@example.com
+DEBUG: Fetching purchases for user: buyer_1766673170128@example.com
+DEBUG: Found 1 purchases for buyer_1766673170128@example.com
+DEBUG: Purchasing 1 sweet(s) 1 for user: buyer_1766673216728@example.com
+DEBUG: Purchase saved for buyer_1766673216728@example.com
+DEBUG: Fetching purchases for user: buyer_1766673216728@example.com
+DEBUG: Found 1 purchases for buyer_1766673216728@example.com
+DEBUG: Fetching purchases for user: buyer_1766673216728@example.com
+DEBUG: Found 1 purchases for buyer_1766673216728@example.com

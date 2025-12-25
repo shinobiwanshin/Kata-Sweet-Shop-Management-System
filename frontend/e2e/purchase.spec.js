@@ -39,8 +39,8 @@ test.describe("Purchase Flow", () => {
     await expect(page).toHaveURL("/profile");
 
     // Check if purchase history table exists and has rows
-    await expect(page.getByText("Purchase History")).toBeVisible();
-    // We might need to be more specific, but checking for the table is a good start
-    await expect(page.locator("tbody tr").first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Purchase History' })).toBeVisible();
+    // Check for the purchased sweet in the history list
+    await expect(page.getByText("Chocolate Fudge")).toBeVisible();
   });
 });

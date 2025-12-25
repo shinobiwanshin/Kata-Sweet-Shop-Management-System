@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
@@ -52,17 +52,21 @@ export default function Shop() {
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
-  const handlePurchaseClick = (id) => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    const sweet = sweets.find((s) => s.id === id);
-    if (sweet) {
-      setSelectedSweet(sweet);
-      setIsPurchaseModalOpen(true);
-    }
-  };
+  // Memoized to prevent re-renders of SweetCard when other state (like filters) changes
+  const handlePurchaseClick = useCallback(
+    (id) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+      const sweet = sweets.find((s) => s.id === id);
+      if (sweet) {
+        setSelectedSweet(sweet);
+        setIsPurchaseModalOpen(true);
+      }
+    },
+    [user, navigate, sweets]
+  );
 
   const handleConfirmPurchase = async (quantity) => {
     if (!selectedSweet || !user) return;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -24,7 +24,7 @@ const categoryColors = {
   other: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-export default function SweetCard({
+const SweetCard = memo(function SweetCard({
   sweet,
   onPurchase,
   onEdit,
@@ -152,4 +152,7 @@ export default function SweetCard({
       </Card>
     </motion.div>
   );
-}
+});
+
+// Memoized to reduce unnecessary re-renders in large lists
+export default SweetCard;

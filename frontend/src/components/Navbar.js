@@ -1,15 +1,13 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  // Note: logout is handled by Clerk UI (UserButton / SignOutButton) so we rely on Clerk components for sign-out behavior.
 
   return (
     <nav className="bg-blue-600 p-4 text-white shadow-md">
@@ -26,24 +24,19 @@ const Navbar = () => {
                   ADMIN
                 </span>
               )}
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition"
-              >
-                Logout
-              </button>
+              {/* Clerk's UserButton provides profile UI and sign-out */}
+              <UserButton afterSignOutUrl="/login" />
             </>
           ) : (
             <>
-              <Link to="/login" className="hover:underline">
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded transition"
-              >
-                Register
-              </Link>
+              <SignInButton mode="modal">
+                <button className="hover:underline">Login</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded transition">
+                  Register
+                </button>
+              </SignUpButton>
             </>
           )}
         </div>

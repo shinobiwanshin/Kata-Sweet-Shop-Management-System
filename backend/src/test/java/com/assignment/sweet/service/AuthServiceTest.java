@@ -1,6 +1,5 @@
 package com.assignment.sweet.service;
 
-import com.assignment.sweet.dto.RegisterRequest;
 import com.assignment.sweet.model.User;
 import com.assignment.sweet.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -8,7 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,94 +22,238 @@ class AuthServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private AuthService authService;
 
     @Test
-    void register_ShouldCreateUser_WhenEmailIsUnique() {
+    void syncUserFromClerk_ShouldUpdateExistingUser_WhenUserExistsByClerkId() {
         // Arrange
-        RegisterRequest request = new RegisterRequest("test@example.com", "password", "USER");
-        when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            user.setId(1L);
-            return user;
-        });
+        String clerkId = "clerk_123";
+        String email = "test@example.com";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setClerkId(clerkId);
+        existingUser.setEmail("old@example.com");
+        existingUser.setFirstName("Old");
+        existingUser.setLastName("Name");
+
+        when(userRepository.findByClerkId(clerkId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
         // Act
-        User result = authService.register(request);
+        User result = authService.syncUserFromClerk(clerkId, email, firstName, lastName);
 
         // Assert
         assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals(request.getEmail(), result.getEmail());
-        assertEquals("encodedPassword", result.getPassword());
+        assertEquals(clerkId, result.getClerkId());
+        assertEquals(email, result.getEmail());
+        assertEquals(firstName, result.getFirstName());
+        assertEquals(lastName, result.getLastName());
+        verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void syncUserFromClerk_ShouldMigrateExistingUser_WhenUserExistsByEmail() {
+        // Arrange
+        String clerkId = "clerk_123";
+        String email = "test@example.com";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setEmail(email);
+        existingUser.setFirstName("Old");
+        existingUser.setLastName("Name");
+
+        when(userRepository.findByClerkId(clerkId)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+
+        // Act
+        User result = authService.syncUserFromClerk(clerkId, email, firstName, lastName);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(clerkId, result.getClerkId());
+        assertEquals(email, result.getEmail());
+        assertEquals(firstName, result.getFirstName());
+        assertEquals(lastName, result.getLastName());
+        verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void syncUserFromClerk_ShouldCreateNewUser_WhenUserDoesNotExist() {
+        // Arrange
+        String clerkId = "clerk_123";
+        String email = "test@example.com";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        User newUser = new User();
+        newUser.setId(1L);
+        newUser.setClerkId(clerkId);
+        newUser.setEmail(email);
+        newUser.setFirstName(firstName);
+        newUser.setLastName(lastName);
+        newUser.setRole("USER");
+
+        when(userRepository.findByClerkId(clerkId)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenReturn(newUser);
+
+        // Act
+        User result = authService.syncUserFromClerk(clerkId, email, firstName, lastName);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(clerkId, result.getClerkId());
+        assertEquals(email, result.getEmail());
+        assertEquals(firstName, result.getFirstName());
+        assertEquals(lastName, result.getLastName());
+        assertEquals("USER", result.getRole());
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void register_ShouldThrowException_WhenEmailAlreadyExists() {
+    void handleClerkUserEvent_ShouldProcessUserCreatedEvent() {
         // Arrange
-        RegisterRequest request = new RegisterRequest("existing@example.com", "password", "USER");
-        when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "test@example.com");
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> authService.register(request));
-        verify(userRepository, never()).save(any(User.class));
-    }
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", "clerk_123");
+        userData.put("first_name", "John");
+        userData.put("last_name", "Doe");
+        userData.put("email_addresses", java.util.List.of(emailAddress));
 
-    @Mock
-    private com.assignment.sweet.security.JwtTokenProvider jwtTokenProvider;
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("type", "user.created");
+        eventData.put("data", userData);
 
-    @Test
-    void login_ShouldReturnToken_WhenCredentialsAreValid() {
-        // Arrange
-        com.assignment.sweet.dto.LoginRequest request = new com.assignment.sweet.dto.LoginRequest("test@example.com",
-                "password");
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("encodedPassword");
-        user.setRole("USER");
+        User syncedUser = new User();
+        syncedUser.setId(1L);
+        syncedUser.setClerkId("clerk_123");
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(java.util.Optional.of(user));
-        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
-        when(jwtTokenProvider.generateToken(user)).thenReturn("jwt-token");
+        when(userRepository.findByClerkId("clerk_123")).thenReturn(Optional.of(syncedUser));
+        when(userRepository.save(any(User.class))).thenReturn(syncedUser);
 
         // Act
-        String token = authService.login(request);
+        authService.handleClerkUserEvent(eventData);
 
         // Assert
-        assertEquals("jwt-token", token);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void login_ShouldThrowException_WhenUserNotFound() {
+    void handleClerkUserEvent_ShouldProcessUserUpdatedEvent() {
         // Arrange
-        com.assignment.sweet.dto.LoginRequest request = new com.assignment.sweet.dto.LoginRequest("unknown@example.com",
-                "password");
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(java.util.Optional.empty());
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "test@example.com");
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> authService.login(request));
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", "clerk_123");
+        userData.put("first_name", "John");
+        userData.put("last_name", "Smith");
+        userData.put("email_addresses", java.util.List.of(emailAddress));
+
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("type", "user.updated");
+        eventData.put("data", userData);
+
+        User syncedUser = new User();
+        syncedUser.setId(1L);
+        syncedUser.setClerkId("clerk_123");
+
+        when(userRepository.findByClerkId("clerk_123")).thenReturn(Optional.of(syncedUser));
+        when(userRepository.save(any(User.class))).thenReturn(syncedUser);
+
+        // Act
+        authService.handleClerkUserEvent(eventData);
+
+        // Assert
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void login_ShouldThrowException_WhenPasswordIsInvalid() {
+    void handleClerkUserEvent_ShouldHandleExceptionGracefully() {
         // Arrange
-        com.assignment.sweet.dto.LoginRequest request = new com.assignment.sweet.dto.LoginRequest("test@example.com",
-                "wrongpassword");
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("encodedPassword");
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("type", "user.created");
+        eventData.put("data", null); // This will cause an exception
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(java.util.Optional.of(user));
-        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);
+        // Act & Assert - Should not throw exception
+        assertDoesNotThrow(() -> authService.handleClerkUserEvent(eventData));
+    }
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> authService.login(request));
+    @Test
+    void handleClerkUserEvent_ShouldPromoteUserToAdmin_OnOrganizationMembershipCreated() {
+        // Arrange
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "admin@example.com");
+
+        Map<String, Object> userObj = new HashMap<>();
+        userObj.put("email_addresses", java.util.List.of(emailAddress));
+
+        Map<String, Object> membership = new HashMap<>();
+        membership.put("role", "admin");
+        membership.put("user", userObj);
+
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("type", "organization.membership.created");
+        Map<String, Object> data = new HashMap<>();
+        data.put("membership", membership);
+        eventData.put("data", data);
+
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setEmail("admin@example.com");
+        existingUser.setRole("USER");
+
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+
+        // Act
+        authService.handleClerkUserEvent(eventData);
+
+        // Assert
+        verify(userRepository).save(argThat(u -> "ADMIN".equals(u.getRole())));
+    }
+
+    @Test
+    void handleClerkUserEvent_ShouldDemoteUser_OnOrganizationMembershipDeleted() {
+        // Arrange
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "admin@example.com");
+
+        Map<String, Object> userObj = new HashMap<>();
+        userObj.put("email_addresses", java.util.List.of(emailAddress));
+
+        Map<String, Object> membership = new HashMap<>();
+        membership.put("role", "member");
+        membership.put("user", userObj);
+
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("type", "organization.membership.deleted");
+        Map<String, Object> data = new HashMap<>();
+        data.put("membership", membership);
+        eventData.put("data", data);
+
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setEmail("admin@example.com");
+        existingUser.setRole("ADMIN");
+
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+
+        // Act
+        authService.handleClerkUserEvent(eventData);
+
+        // Assert
+        verify(userRepository).save(argThat(u -> "USER".equals(u.getRole())));
     }
 }

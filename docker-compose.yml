@@ -16,9 +16,16 @@ services:
       - sweet-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_CLERK_PUBLISHABLE_KEY: ${REACT_APP_CLERK_PUBLISHABLE_KEY}
+        REACT_APP_ENABLE_DEV_REGISTER: ${REACT_APP_ENABLE_DEV_REGISTER}
     ports:
       - "3000:80"
+    environment:
+      - REACT_APP_CLERK_PUBLISHABLE_KEY=${REACT_APP_CLERK_PUBLISHABLE_KEY}
+      - REACT_APP_ENABLE_DEV_REGISTER=${REACT_APP_ENABLE_DEV_REGISTER}
     depends_on:
       - backend
     networks:

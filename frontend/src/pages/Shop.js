@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
-import { Candy, User, LogOut, Package } from "lucide-react";
+import { Candy, Package } from "lucide-react";
+import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -138,25 +139,22 @@ export default function Shop() {
                       variant="ghost"
                       className="text-gray-600 hover:text-gray-900"
                     >
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
+                      <Package className="w-4 h-4 mr-2" />
+                      Purchase History
                     </Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
+
+                  {/* Clerk's UserButton: avatar + sign-out */}
+                  <div>
+                    <UserButton afterSignOutUrl="/login" />
+                  </div>
                 </>
               ) : (
-                <Link to="/login">
+                <SignInButton mode="modal">
                   <Button className="bg-rose-500 hover:bg-rose-600 text-white">
                     Login
                   </Button>
-                </Link>
+                </SignInButton>
               )}
             </div>
           </div>

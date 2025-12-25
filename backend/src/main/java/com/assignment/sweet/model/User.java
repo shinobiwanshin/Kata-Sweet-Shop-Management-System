@@ -21,18 +21,32 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = true)
+    private String clerkId; // Clerk user ID (nullable to support local test accounts)
+
     @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
     private String role; // USER, ADMIN
+
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
+    @Column
+    private String password;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+    }
+
+    @Override
+    public String getPassword() {
+        return password; // In Clerk mode this may be null, but kept for compatibility with local auth
     }
 
     @Override

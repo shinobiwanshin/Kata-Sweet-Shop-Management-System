@@ -1,6 +1,10 @@
 # Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
+# Accept the Clerk publishable key as a build arg and expose it as an ENV var during build
+ARG REACT_APP_CLERK_PUBLISHABLE_KEY
+ENV REACT_APP_CLERK_PUBLISHABLE_KEY=${REACT_APP_CLERK_PUBLISHABLE_KEY}
+
 COPY package*.json ./
 RUN npm ci
 COPY . .

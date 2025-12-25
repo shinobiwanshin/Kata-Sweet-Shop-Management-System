@@ -6,8 +6,9 @@ import SearchFilters from "../components/SearchFilters";
 import SweetForm from "../components/SweetForm";
 import StatsCards from "../components/StatsCards";
 import { Button } from "../components/ui/button";
-import { Candy, LogOut, Store, Plus } from "lucide-react";
+import { Candy, Store, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserButton } from "@clerk/clerk-react";
 import Swal from "sweetalert2";
 
 const AdminDashboard = () => {
@@ -210,14 +211,9 @@ const AdminDashboard = () => {
                   Shop
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              <div>
+                <UserButton afterSignOutUrl="/login" />
+              </div>
             </div>
           </div>
         </div>

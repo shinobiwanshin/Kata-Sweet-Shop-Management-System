@@ -1,26 +1,27 @@
 package com.assignment.sweet.controller;
 
-import com.assignment.sweet.dto.LoginRequest;
-import com.assignment.sweet.dto.RegisterRequest;
-import com.assignment.sweet.model.User;
 import com.assignment.sweet.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
+@WithMockUser
 class AuthControllerTest {
 
     @Autowired
@@ -29,56 +30,86 @@ class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
-    @MockBean
-    private com.assignment.sweet.security.JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @MockBean
-    private com.assignment.sweet.security.JwtTokenProvider jwtTokenProvider;
-
     @Autowired
     private ObjectMapper objectMapper;
 
-    @org.junit.jupiter.api.BeforeEach
-    void setUp() throws Exception {
-        org.mockito.Mockito.doAnswer(invocation -> {
-            jakarta.servlet.ServletRequest request = invocation.getArgument(0);
-            jakarta.servlet.ServletResponse response = invocation.getArgument(1);
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(request, response);
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    @Test
+    void handleClerkWebhook_ShouldReturnSuccess_WhenUserCreatedEvent() throws Exception {
+        // Prepare Clerk webhook payload for user.created event
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "test@example.com");
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", "clerk_user_123");
+        userData.put("first_name", "John");
+        userData.put("last_name", "Doe");
+        userData.put("email_addresses", java.util.List.of(emailAddress));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "user.created");
+        payload.put("data", userData);
+
+        doNothing().when(authService).handleClerkUserEvent(any());
+
+        mockMvc.perform(post("/api/auth/clerk/webhook")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User event processed successfully"));
     }
 
     @Test
-    @WithMockUser
-    void register_ShouldReturnUser_WhenRequestIsValid() throws Exception {
-        RegisterRequest request = new RegisterRequest("test@example.com", "password", "USER");
-        User user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-        user.setRole("USER");
+    void handleClerkWebhook_ShouldReturnSuccess_WhenUserUpdatedEvent() throws Exception {
+        // Prepare Clerk webhook payload for user.updated event
+        Map<String, Object> emailAddress = new HashMap<>();
+        emailAddress.put("email_address", "test@example.com");
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(user);
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", "clerk_user_123");
+        userData.put("first_name", "John");
+        userData.put("last_name", "Smith");
+        userData.put("email_addresses", java.util.List.of(emailAddress));
 
-        mockMvc.perform(post("/api/auth/register")
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "user.updated");
+        payload.put("data", userData);
+
+        doNothing().when(authService).handleClerkUserEvent(any());
+
+        mockMvc.perform(post("/api/auth/clerk/webhook")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User event processed successfully"));
     }
 
     @Test
-    @WithMockUser
-    void login_ShouldReturnToken_WhenCredentialsAreValid() throws Exception {
-        LoginRequest request = new LoginRequest("test@example.com", "password");
-        when(authService.login(any(LoginRequest.class))).thenReturn("jwt-token");
+    void handleClerkWebhook_ShouldReturnOk_WhenUnhandledEventType() throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "user.deleted");
+        payload.put("data", new HashMap<>());
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/clerk/webhook")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(jsonPath("$.token").value("jwt-token"));
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Event type not handled: user.deleted"));
+    }
+
+    @Test
+    void handleClerkWebhook_ShouldReturnOk_WhenDataIsNull() throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "user.created");
+        payload.put("data", null); // Null data should be handled gracefully
+
+        mockMvc.perform(post("/api/auth/clerk/webhook")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User event processed successfully"));
     }
 }

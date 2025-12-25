@@ -20,10 +20,10 @@ import java.util.Arrays;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final com.assignment.sweet.security.JwtAuthenticationFilter jwtAuthFilter;
+    private final com.assignment.sweet.security.ClerkAuthenticationFilter clerkAuthFilter;
 
-    public SecurityConfig(com.assignment.sweet.security.JwtAuthenticationFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
+    public SecurityConfig(com.assignment.sweet.security.ClerkAuthenticationFilter clerkAuthFilter) {
+        this.clerkAuthFilter = clerkAuthFilter;
     }
 
     @Bean
@@ -36,8 +36,15 @@ public class SecurityConfig {
                                 org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/uploads/**").permitAll()
+                        // Admin-only actions (enforced at URL level for reliability in tests and
+                        // filters)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/sweets").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/sweets/*").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/sweets/*/restock")
+                        .hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/sweets/*").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter,
+                .addFilterBefore(clerkAuthFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

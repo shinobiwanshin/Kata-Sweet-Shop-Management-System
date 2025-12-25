@@ -29,9 +29,12 @@ class CustomUserDetailsServiceTest {
         // Arrange
         String email = "test@example.com";
         User user = new User();
+        user.setId(1L);
+        user.setClerkId("clerk_123");
         user.setEmail(email);
-        user.setPassword("password");
         user.setRole("USER");
+        user.setFirstName("John");
+        user.setLastName("Doe");
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
@@ -41,6 +44,9 @@ class CustomUserDetailsServiceTest {
         // Assert
         assertNotNull(userDetails);
         assertEquals(email, userDetails.getUsername());
+        assertNull(userDetails.getPassword()); // Clerk handles authentication
+        assertTrue(userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER")));
     }
 
     @Test

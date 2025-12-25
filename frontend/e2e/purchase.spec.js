@@ -5,16 +5,81 @@ test.describe("Purchase Flow", () => {
     const email = `buyer_${Date.now()}@example.com`;
     const password = "password123";
 
-    // 1. Register and Login
+    // 1. Register and Login (adaptive to Clerk or dev form)
     await page.goto("/register");
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/login/);
 
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.click('button[type="submit"]');
+    const emailSelectors = [
+      'input[type="email"]',
+      'input[name="email"]',
+      'input[name="emailAddress"]',
+      'input[aria-label*="Email"]',
+    ];
+    const passwordSelectors = [
+      'input[type="password"]',
+      'input[name="password"]',
+      'input[aria-label*="Password"]',
+    ];
+
+    let emailFound = false;
+    for (const sel of emailSelectors) {
+      if ((await page.locator(sel).count()) > 0) {
+        await page.fill(sel, email);
+        emailFound = true;
+        break;
+      }
+    }
+
+    if (!emailFound) {
+      const clerkEmail = page.locator('input[name="emailAddress"]');
+      const clerkPassword = page.locator('input[name="password"]');
+      await clerkEmail.waitFor({ timeout: 10000 });
+      await clerkPassword.waitFor({ timeout: 10000 });
+      await clerkEmail.fill(email);
+      await clerkPassword.fill(password);
+      await page.click('button[type="submit"]');
+    } else {
+      for (const sel of passwordSelectors) {
+        if ((await page.locator(sel).count()) > 0) {
+          await page.fill(sel, password);
+          break;
+        }
+      }
+      await page.click('button[type="submit"]');
+    }
+
+    // Login
+    await page.goto("/login");
+
+    emailFound = false;
+    for (const sel of emailSelectors) {
+      if ((await page.locator(sel).count()) > 0) {
+        await page.fill(sel, email);
+        emailFound = true;
+        break;
+      }
+    }
+
+    if (!emailFound) {
+      const clerkEmail = page.locator('input[name="emailAddress"]');
+      const clerkPassword = page.locator('input[name="password"]');
+      if ((await clerkEmail.count()) > 0) {
+        await clerkEmail.fill(email);
+        await clerkPassword.fill(password);
+        await page.click('button[type="submit"]');
+      } else {
+        throw new Error("No email input found for login");
+      }
+    } else {
+      for (const sel of passwordSelectors) {
+        if ((await page.locator(sel).count()) > 0) {
+          await page.fill(sel, password);
+          break;
+        }
+      }
+      await page.click('button[type="submit"]');
+    }
+
+    // Should redirect to home/shop
     await expect(page).toHaveURL("/");
 
     // 2. Browse Shop and Select Item

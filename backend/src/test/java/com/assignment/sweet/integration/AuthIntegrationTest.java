@@ -155,7 +155,7 @@ class AuthIntegrationTest {
 
     @Test
     void fullAuthFlow_RegisterLoginAndVerifyToken() throws Exception {
-        // Register
+        // Register - Try to request ADMIN role, should be forced to USER
         RegisterRequest registerRequest = new RegisterRequest(
                 "integration-test@example.com",
                 "securePassword123",
@@ -165,7 +165,7 @@ class AuthIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value("ADMIN"));
+                .andExpect(jsonPath("$.role").value("USER")); // Expect USER even if ADMIN was requested
 
         // Login
         LoginRequest loginRequest = new LoginRequest(
@@ -187,6 +187,7 @@ class AuthIntegrationTest {
         String payload = new String(java.util.Base64.getDecoder()
                 .decode(token.split("\\.")[1]));
         assertTrue(payload.contains("integration-test@example.com"));
-        assertTrue(payload.contains("ADMIN"));
+        // Token should contain USER role, not ADMIN
+        assertTrue(payload.contains("USER"));
     }
 }

@@ -53,12 +53,17 @@ class PurchaseIntegrationTest {
 
         @Test
         void purchaseFlow_ShouldSucceed() throws Exception {
-                // 1. Register Admin
-                RegisterRequest adminRegister = new RegisterRequest("admin@test.com", "password", "ADMIN");
+                // 1. Register Admin (Now users are always registered as USER, so we need to manually update the role)
+                RegisterRequest adminRegister = new RegisterRequest("admin@test.com", "password", "USER");
                 mockMvc.perform(post("/api/auth/register")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(adminRegister)))
                                 .andExpect(status().isOk());
+
+                // Manually promote to ADMIN for testing purposes
+                var user = userRepository.findByEmail("admin@test.com").orElseThrow();
+                user.setRole("ADMIN");
+                userRepository.save(user);
 
                 // 2. Login Admin
                 LoginRequest adminLogin = new LoginRequest("admin@test.com", "password");

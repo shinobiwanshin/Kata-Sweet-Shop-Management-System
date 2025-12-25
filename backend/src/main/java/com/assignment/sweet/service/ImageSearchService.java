@@ -1,18 +1,23 @@
 package com.assignment.sweet.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ImageSearchService {
 
@@ -21,8 +26,11 @@ public class ImageSearchService {
 
     private final RestTemplate restTemplate;
 
-    public ImageSearchService() {
-        this.restTemplate = new RestTemplate();
+    public ImageSearchService(RestTemplateBuilder builder) {
+        this.restTemplate = builder
+                .setConnectTimeout(Duration.ofSeconds(5))
+                .setReadTimeout(Duration.ofSeconds(10))
+                .build();
     }
 
     public List<String> searchImages(String query) {
@@ -30,7 +38,10 @@ public class ImageSearchService {
             return Collections.emptyList();
         }
 
-        String url = "https://api.unsplash.com/search/photos?query=" + query + "&per_page=12";
+        String url = UriComponentsBuilder.fromHttpUrl("https://api.unsplash.com/search/photos")
+                .queryParam("query", query.trim())
+                .queryParam("per_page", 12)
+                .toUriString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Client-ID " + accessKey);
@@ -50,8 +61,7 @@ public class ImageSearchService {
                     .collect(Collectors.toList());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            // In a real app, we might want to throw a custom exception or log this better
+            log.error("Failed to search images from Unsplash", e);
         }
 
         return Collections.emptyList();

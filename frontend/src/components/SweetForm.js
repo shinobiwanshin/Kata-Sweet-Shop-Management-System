@@ -327,15 +327,23 @@ export default function SweetForm({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto p-1">
-            {searchResults.map((url, index) => (
+            {searchResults.map((url) => (
               <div
-                key={index}
+                key={url}
                 className="cursor-pointer group relative aspect-square rounded-md overflow-hidden border hover:ring-2 hover:ring-rose-500"
                 onClick={() => selectImage(url)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectImage(url);
+                  }
+                }}
               >
                 <img
                   src={url}
-                  alt={`Result ${index}`}
+                  alt="Result"
                   className="w-full h-full object-cover transition-transform group-hover:scale-110"
                 />
               </div>

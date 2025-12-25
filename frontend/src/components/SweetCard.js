@@ -133,6 +133,7 @@ export default function SweetCard({
                   size="icon"
                   className="border-rose-200 hover:bg-rose-50"
                   title="Edit"
+                  aria-label={`Edit ${sweet.name}`}
                 >
                   <Pencil className="w-4 h-4" />
                 </Button>
@@ -142,6 +143,7 @@ export default function SweetCard({
                   size="icon"
                   className="border-red-200 hover:bg-red-50 text-red-600"
                   title="Delete"
+                  aria-label={`Delete ${sweet.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

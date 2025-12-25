@@ -10,7 +10,7 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PurchaseModal({
@@ -86,6 +86,7 @@ export default function PurchaseModal({
                 onClick={decrement}
                 disabled={quantity <= 1}
                 className="h-10 w-10 border-rose-200 hover:bg-rose-50"
+                aria-label="Decrease quantity"
               >
                 <Minus className="w-4 h-4" />
               </Button>
@@ -97,6 +98,7 @@ export default function PurchaseModal({
                 value={quantity}
                 onChange={(e) => handleQuantityChange(e.target.value)}
                 className="text-center text-lg font-semibold h-10 border-gray-200"
+                autoComplete="off"
               />
               <Button
                 type="button"
@@ -105,6 +107,7 @@ export default function PurchaseModal({
                 onClick={increment}
                 disabled={quantity >= maxQuantity}
                 className="h-10 w-10 border-rose-200 hover:bg-rose-50"
+                aria-label="Increase quantity"
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -140,7 +143,14 @@ export default function PurchaseModal({
             disabled={isProcessing}
             className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700"
           >
-            {isProcessing ? "Processing..." : "Confirm Purchase"}
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Confirm Purchase"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

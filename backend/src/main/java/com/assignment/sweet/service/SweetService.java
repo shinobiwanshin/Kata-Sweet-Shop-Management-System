@@ -2,11 +2,13 @@ package com.assignment.sweet.service;
 
 import com.assignment.sweet.model.Sweet;
 import com.assignment.sweet.repository.SweetRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class SweetService {
 
     private final SweetRepository sweetRepository;
@@ -35,7 +37,7 @@ public class SweetService {
     }
 
     public Sweet purchaseSweet(Long id, Integer quantity, String customerEmail) {
-        System.out.println("DEBUG: Purchasing " + quantity + " sweet(s) " + id + " for user: " + customerEmail);
+        log.debug("Purchasing {} sweet(s) {} for user: {}", quantity, id, customerEmail);
         Sweet sweet = sweetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sweet not found"));
 
@@ -55,7 +57,7 @@ public class SweetService {
         purchase.setTotalPrice(savedSweet.getPrice().multiply(java.math.BigDecimal.valueOf(quantity)));
         purchase.setCustomerEmail(customerEmail);
         purchaseRepository.save(purchase);
-        System.out.println("DEBUG: Purchase saved for " + customerEmail);
+        log.debug("Purchase saved for {}", customerEmail);
 
         return savedSweet;
     }

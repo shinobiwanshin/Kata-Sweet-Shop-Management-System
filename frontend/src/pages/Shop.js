@@ -54,18 +54,17 @@ export default function Shop() {
 
   // Memoized to prevent re-renders of SweetCard when other state (like filters) changes
   const handlePurchaseClick = useCallback(
-    (id) => {
+    (sweet) => {
       if (!user) {
         navigate("/login");
         return;
       }
-      const sweet = sweets.find((s) => s.id === id);
       if (sweet) {
         setSelectedSweet(sweet);
         setIsPurchaseModalOpen(true);
       }
     },
-    [user, navigate, sweets]
+    [user, navigate]
   );
 
   const handleConfirmPurchase = async (quantity) => {

@@ -46,7 +46,7 @@ describe("SweetCard Component", () => {
     const purchaseButton = screen.getByRole("button", { name: /purchase/i });
     fireEvent.click(purchaseButton);
 
-    expect(mockOnPurchase).toHaveBeenCalledWith(mockSweet.id);
+    expect(mockOnPurchase).toHaveBeenCalledWith(mockSweet);
   });
 
   test("renders admin buttons when isAdmin is true", () => {

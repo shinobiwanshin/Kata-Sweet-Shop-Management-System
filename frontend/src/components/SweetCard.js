@@ -110,7 +110,7 @@ const SweetCard = memo(function SweetCard({
           <div className="flex gap-2">
             {!isAdmin ? (
               <Button
-                onClick={() => onPurchase(sweet.id)}
+                onClick={() => onPurchase(sweet)}
                 disabled={isOutOfStock}
                 className="flex-1 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white"
               >

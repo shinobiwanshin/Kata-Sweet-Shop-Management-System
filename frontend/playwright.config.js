@@ -1,6 +1,9 @@
 // @ts-check
 const { defineConfig, devices } = require("@playwright/test");
 
+// Load environment variables from .env.test for Playwright
+require("dotenv").config({ path: ".env.test" });
+
 module.exports = defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

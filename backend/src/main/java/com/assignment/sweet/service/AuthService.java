@@ -4,6 +4,7 @@ import com.assignment.sweet.model.User;
 import com.assignment.sweet.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +28,23 @@ public class AuthService {
     /**
      * Synchronize user from Clerk webhook
      */
+    @Transactional
     public User syncUserFromClerk(String clerkId, String email, String firstName, String lastName) {
         Optional<User> existingUser = userRepository.findByClerkId(clerkId);
 
         if (existingUser.isPresent()) {
             // Update existing user
             User user = existingUser.get();
+
+            // Check email uniqueness before updating
+            if (!email.equals(user.getEmail())) {
+                Optional<User> userWithNewEmail = userRepository.findByEmail(email);
+                if (userWithNewEmail.isPresent() && !userWithNewEmail.get().getId().equals(user.getId())) {
+                    throw new IllegalStateException(
+                            "Cannot update user email to '" + email + "': email already exists for another user");
+                }
+            }
+
             user.setEmail(email);
             user.setFirstName(firstName);
             user.setLastName(lastName);
@@ -46,15 +58,20 @@ public class AuthService {
                 user.setClerkId(clerkId);
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
+                // Set auth type for migrated users (assume they were LOCAL before)
+                if (user.getAuthType() == null) {
+                    user.setAuthType(com.assignment.sweet.model.AuthType.CLERK);
+                }
                 return userRepository.save(user);
             } else {
-                // Create new user
+                // Create new CLERK user
                 User user = new User();
                 user.setClerkId(clerkId);
                 user.setEmail(email);
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 user.setRole("USER"); // Default role
+                user.setAuthType(com.assignment.sweet.model.AuthType.CLERK);
                 return userRepository.save(user);
             }
         }
@@ -66,12 +83,12 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
         User user = new User();
-        // Assign a local clerk id so DB not null constraint is satisfied across
-        // environments
-        user.setClerkId("local:" + java.util.UUID.randomUUID().toString());
+        // LOCAL users have no clerkId
+        user.setClerkId(null);
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : "USER");
+        user.setAuthType(com.assignment.sweet.model.AuthType.LOCAL);
         return userRepository.save(user);
     }
 

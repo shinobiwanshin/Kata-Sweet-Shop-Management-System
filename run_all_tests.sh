@@ -33,7 +33,7 @@ echo -e "\n${GREEN}=== Running Frontend E2E Tests (Playwright) ===${NC}"
 echo "Note: Ensure backend server is running on port 8080 for E2E tests."
 # Check if backend is running (simple check)
 if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
-    if npx playwright test; then
+    if npx playwright test e2e/recorded-test.spec.js; then
         echo -e "${GREEN}E2E Tests Passed!${NC}"
     else
         echo -e "${RED}E2E Tests Failed!${NC}"

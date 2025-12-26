@@ -1,0 +1,43 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE files
+.vscode/
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+target/
+build/
+dist/
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node modules
+node_modules/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (if not persisted)
+uploads/

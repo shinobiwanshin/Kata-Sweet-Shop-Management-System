@@ -110,11 +110,14 @@ cd Sweetify
 
 1. Create a **Web Service** on Render connected to your repo.
 2. **Runtime**: Docker
-3. **Environment Variables**:
+3. **Environment Variables** (Required):
    - `SPRING_DATASOURCE_URL`: `postgres://...` (Internal DB URL)
    - `SPRING_DATASOURCE_USERNAME`: `...`
    - `SPRING_DATASOURCE_PASSWORD`: `...`
    - `JWT_SECRET`: (Generate a secure 256-bit key)
+   - `CLERK_SECRET_KEY`: (Required - Clerk Secret Key from Clerk Dashboard)
+   - `CLERK_JWKS_URI`: (Required - Clerk JWKS URI from Clerk Dashboard)
+   - `CLERK_WEBHOOK_SECRET`: (Required - Clerk Webhook Secret from Clerk Dashboard)
 4. **Note**: The project includes an `entrypoint.sh` script to automatically handle Render's database URL format.
 
 ### Frontend (Vercel)
@@ -123,6 +126,15 @@ cd Sweetify
 2. **Root Directory**: `frontend`
 3. **Environment Variables**:
    - `REACT_APP_API_URL`: `https://your-backend-service.onrender.com/api` (Must include `/api` suffix)
+
+### 🔐 Security Notes
+
+**⚠️ NEVER commit secrets to version control!**
+
+- All sensitive configuration (API keys, secrets, database credentials) must be set via environment variables
+- Use a secret manager (like Render's environment variables, AWS Secrets Manager, or similar) for production deployments
+- The `CLERK_SECRET_KEY` and `CLERK_WEBHOOK_SECRET` are particularly sensitive and should be rotated regularly
+- If you suspect any secret has been exposed, revoke it immediately in the Clerk Dashboard and generate new ones
 
 ## 🔑 API Endpoints
 

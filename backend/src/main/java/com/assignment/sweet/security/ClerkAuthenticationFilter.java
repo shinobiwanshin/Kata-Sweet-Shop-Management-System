@@ -1,7 +1,12 @@
 package com.assignment.sweet.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.JwkProviderBuilder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +26,9 @@ import com.assignment.sweet.model.User;
 import com.assignment.sweet.repository.UserRepository;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.interfaces.RSAPublicKey;
 
 @Slf4j
 @Component
@@ -28,6 +36,11 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
 
     @Value("${clerk.secret-key:}")
     private String clerkSecretKey;
+
+    @Value("${clerk.jwks-uri:}")
+    private String jwksUri;
+
+    private JwkProvider jwkProvider;
 
     private UserDetailsService userDetailsService;
     private UserRepository userRepository;
@@ -46,6 +59,22 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
         this(userDetailsService, null);
     }
 
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        try {
+            if (jwksUri != null && !jwksUri.isEmpty()) {
+                jwkProvider = new JwkProviderBuilder(new URL(jwksUri)).build();
+                // Note: verifier is built per-token in doFilterInternal since we need the
+                // specific key
+                log.info("JWKS provider initialized with URI: {}", jwksUri);
+            } else {
+                log.warn("JWKS URI not configured - JWT verification will be skipped (NOT SAFE FOR PRODUCTION)");
+            }
+        } catch (MalformedURLException e) {
+            log.error("Invalid JWKS URI: {}", jwksUri, e);
+        }
+    }
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -62,13 +91,41 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            // Decode the JWT token (without verification for now)
-            // In production, you should implement proper JWT verification with Clerk's
-            // public keys
-            DecodedJWT decodedJWT = JWT.decode(jwt);
+            // Verify the JWT token with Clerk's public keys
+            DecodedJWT decodedJWT;
+            if (jwkProvider != null) {
+                // Get the key ID from the token header
+                String kid = JWT.decode(jwt).getKeyId();
+                if (kid == null) {
+                    throw new JWTVerificationException("Token missing 'kid' header");
+                }
+
+                // Get the public key for this key ID
+                Jwk jwk = jwkProvider.get(kid);
+                RSAPublicKey publicKey = (RSAPublicKey) jwk.getPublicKey();
+
+                // Create algorithm with the correct public key
+                Algorithm algorithm = Algorithm.RSA256(publicKey);
+
+                // Extract issuer from JWKS URI (e.g.,
+                // https://xxx.clerk.accounts.dev/.well-known/jwks.json ->
+                // https://xxx.clerk.accounts.dev)
+                String expectedIssuer = jwksUri.replace("/.well-known/jwks.json", "");
+
+                // Verify the token with flexible issuer matching
+                decodedJWT = JWT.require(algorithm)
+                        .withIssuer(expectedIssuer)
+                        .build()
+                        .verify(jwt);
+            } else {
+                // Fallback to decode-only for development (NOT SECURE)
+                log.warn("JWKS URI not configured - using insecure JWT decode only!");
+                decodedJWT = JWT.decode(jwt);
+            }
 
             // Basic validation - check if token is not expired
-            if (decodedJWT.getExpiresAt().after(new java.util.Date()) &&
+            java.util.Date expiresAt = decodedJWT.getExpiresAt();
+            if (expiresAt != null && expiresAt.after(new java.util.Date()) &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 // Extract user information from the token
@@ -78,7 +135,7 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
                 String lastName = decodedJWT.getClaim("last_name").asString();
 
                 // Log all claims for debugging
-                log.info("JWT claims for user {}: {}", userId, decodedJWT.getClaims().keySet());
+                log.debug("JWT claims for user {}: {}", userId, decodedJWT.getClaims().keySet());
 
                 // Determine role from token claims (support several claim shapes)
                 String role = "USER"; // default role
@@ -92,24 +149,24 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
                         // Try to get as map (Clerk org claim format)
                         java.util.Map<String, Object> orgMap = oClaim.asMap();
                         if (orgMap != null) {
-                            log.info("JWT 'o' claim (org info): {}", orgMap);
+                            log.debug("JWT 'o' claim (org info): {}", orgMap);
                             // Clerk uses "rol" (not "role") for the role field
                             Object orgRole = orgMap.get("rol");
                             Object orgSlg = orgMap.get("slg"); // slug
                             Object orgPer = orgMap.get("per"); // permissions
-                            log.info("Org rol: {}, slug: {}, permissions: {}", orgRole, orgSlg, orgPer);
+                            log.debug("Org rol: {}, slug: {}, permissions: {}", orgRole, orgSlg, orgPer);
 
                             if (orgRole != null) {
                                 String r = orgRole.toString().toLowerCase();
                                 if (r.equals("admin") || r.equals("org:admin") || r.equals("owner")) {
                                     role = "ADMIN";
-                                    log.info("User granted ADMIN role via 'o.rol' claim");
+                                    log.debug("User granted ADMIN role via 'o.rol' claim");
                                 }
                             }
                             // Also check permissions for admin
                             if (orgPer != null && orgPer.toString().contains("admin")) {
                                 role = "ADMIN";
-                                log.info("User granted ADMIN role via org permissions");
+                                log.debug("User granted ADMIN role via org permissions");
                             }
                         }
                     }
@@ -144,12 +201,12 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
                 // 2) org_role claim (Clerk's standard claim for current org role)
                 try {
                     String orgRole = decodedJWT.getClaim("org_role").asString();
-                    log.info("JWT org_role claim: {}", orgRole);
+                    log.debug("JWT org_role claim: {}", orgRole);
                     if (orgRole != null) {
                         String r = orgRole.toLowerCase();
                         if (r.equals("admin") || r.equals("org:admin") || r.equals("owner")) {
                             role = "ADMIN";
-                            log.info("User granted ADMIN role via org_role claim");
+                            log.debug("User granted ADMIN role via org_role claim");
                         }
                     }
                 } catch (Exception ignored) {
@@ -186,7 +243,7 @@ public class ClerkAuthenticationFilter extends OncePerRequestFilter {
                 } catch (Exception ignored) {
                 }
 
-                log.info("Final role for user {}: {}", email, role);
+                log.debug("Final role for user {}: {}", email, role);
 
                 // Use email as username for compatibility
                 String username = email != null ? email : userId;
